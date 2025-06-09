@@ -57,8 +57,21 @@ void process_file(const char *path, size_t *results) {
         return;
     size_t nread, i;
     char buffer[READ_BUFFER_SIZE] = {0};
-    while ((nread = fread(buffer, sizeof(char), READ_BUFFER_SIZE, fp)) > 0)
+#ifdef UNIQUE_SEQ
+    char prev, curr;
+#endif
+    while ((nread = fread(buffer, sizeof(char), READ_BUFFER_SIZE, fp)) > 0) {
+#ifdef UNIQUE_SEQ
+        for (i = 1; i < nread; i++) {
+            prev = buffer[i-1];
+            curr = buffer[i];
+            if (curr != prev)
+                results[curr] += 1;
+        }
+#else
         for (i = 0; i < nread; i++)
             results[buffer[i]] += 1;
+#endif
+    }
     fclose(fp);
 }
